@@ -65,7 +65,7 @@ def radiolist_dialog(title='', values=None, style=None, async_=False):
             [load_key_bindings(), bindings]),
         mouse_support=True,
         style=style,        
-        full_screen=False)
+        full_screen=True)
 
     if async_:
         return application.run_async()
