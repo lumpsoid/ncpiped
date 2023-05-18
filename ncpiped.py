@@ -13,14 +13,11 @@ from prompt_toolkit.shortcuts import print_formatted_text, prompt, clear
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.filters import Condition
 
-
-import cchardet
 import subprocess
 import argparse
 import json
 import re
 import time
-
 import requests
 
 sub_el = re.compile(r'\|')
@@ -33,6 +30,12 @@ def check_network():
         return True
     except:
         return False
+
+
+def run_video(video_player: str, result) -> None:
+    video_player = video_player.split(' ')
+    video_player.append(result)
+    subprocess.run(video_player)
 
 
 def row_formater(row,separator):
@@ -85,7 +88,7 @@ def json_parse(item, domain="https://watch.whatever.social"):
     return (creator_name,title,duration_time,publish_time,domain+video_url,domain+creator_url)
 
 
-def parse_piped_feed(domain,separator):
+def parse_piped_feed(domain,separator, video_player):
     token = prompt('your token > ', default='7c7b9f5a-6018-4a59-9361-d28beb5754a1')
     data = requests.get(f'https://{domain}/feed?authToken='+token)
     videos = []
@@ -102,13 +105,13 @@ def parse_piped_feed(domain,separator):
         if result is None:
             return print("End program")
         
-        subprocess.run(['mpv', result])
+        run_video(video_player, result)
         clear()
 
     return
 
 
-def parse_piped_search(domain, separator):
+def parse_piped_search(domain, separator, video_player):
     search_query = prompt('what we would search? > ')
     data = requests.get(f'https://{domain}/search?q={search_query}&filter=all')
     json_data = json.loads(data.content)
@@ -139,13 +142,13 @@ def parse_piped_search(domain, separator):
         if result is None:
             return print("End program")
         
-        subprocess.run(['mpv', result])
+        run_video(video_player, result)
         clear()
     
     return videos
 
 
-def parse_piped_channel(domain, separator):
+def parse_piped_channel(domain, separator, video_player):
     
     with open('/home/qq/Documents/Programming/Scripts/text-piped-cli/channels-json') as f:
         channel_json = json.load(f)
@@ -204,7 +207,7 @@ def parse_piped_channel(domain, separator):
         if result is None:
             return print("End program")
         
-        subprocess.run(['mpv', result])
+        run_video(video_player, result)
         clear()
     
     return videos
@@ -221,15 +224,30 @@ def main():
         return print("Don't have ethernet")
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--domain",
-                        choices=['watchapi.whatever.social', 'piped.kavin.rocks'],
-                        help="domain of piped to use", required=False)
-    parser.add_argument("-m", "--mode",
-                        default='none',
-                        choices=['feed', 'search', 'channel'],
-                        help="in which mode to run the parser. You can use: ['feed', 'search', 'channel']", required=False)
-    parser.add_argument("-s", "--separator", default=' | ',
-                        help="which separator to use")
+    parser.add_argument(
+        "-d", "--domain",
+        choices=['watchapi.whatever.social', 'piped.kavin.rocks'],
+        help="domain of piped to use", 
+        required=False
+    )
+    parser.add_argument(
+        "-m", "--mode",
+        default='none',
+        choices=['feed', 'search', 'channel'],
+        help="in which mode to run the parser. You can use: ['feed', 'search', 'channel']",
+        required=False
+    )
+    parser.add_argument(
+        "-v", "--video-player",
+        help="player with/withour parameters",
+        default='mpv',
+        required=False
+    )
+    parser.add_argument(
+        "-s", "--separator",
+        default=' | ',
+        help="which separator to use"
+    )
     args = parser.parse_args()
     
 
@@ -251,7 +269,7 @@ def main():
     #         ])
 
     choosed_func = func_dict.get(args.mode)
-    choosed_func(domain=args.domain, separator=args.separator)
+    choosed_func(domain=args.domain, separator=args.separator, video_player=args.video_player)
 
     # while True:
     #     result = radiolist_dialog(
