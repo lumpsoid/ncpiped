@@ -1,24 +1,25 @@
 #!/home/qq/Applications/miniconda3/bin/python
 
 from __future__ import unicode_literals
-from prompt_toolkit.application import Application
-from prompt_toolkit.key_binding.defaults import load_key_bindings
-from prompt_toolkit.key_binding.key_bindings import KeyBindings, merge_key_bindings
-from prompt_toolkit.layout import Layout
-from prompt_toolkit.buffer import Buffer
-from prompt_toolkit.widgets import RadioList, Label, SearchToolbar
-from prompt_toolkit.keys import Keys
-from prompt_toolkit.layout.containers import HSplit, VSplit, Window
-from prompt_toolkit.shortcuts import print_formatted_text, prompt, clear
-from prompt_toolkit.application.current import get_app
-from prompt_toolkit.filters import Condition
 
-import subprocess
 import argparse
 import json
 import re
+import subprocess
 import time
+
 import requests
+from prompt_toolkit.application import Application
+from prompt_toolkit.application.current import get_app
+from prompt_toolkit.buffer import Buffer
+from prompt_toolkit.filters import Condition
+from prompt_toolkit.key_binding.defaults import load_key_bindings
+from prompt_toolkit.key_binding.key_bindings import KeyBindings, merge_key_bindings
+from prompt_toolkit.keys import Keys
+from prompt_toolkit.layout import Layout
+from prompt_toolkit.layout.containers import HSplit, VSplit, Window
+from prompt_toolkit.shortcuts import clear, print_formatted_text, prompt
+from prompt_toolkit.widgets import Label, RadioList, SearchToolbar
 
 sub_el = re.compile(r'\|')
 
@@ -85,7 +86,14 @@ def json_parse(item, domain="https://watch.whatever.social"):
     publish_time = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(item.get('uploaded') // 1000))
     video_url = item.get('url')
     creator_url = item.get('uploaderUrl')
-    return (creator_name,title,duration_time,publish_time,domain+video_url,domain+creator_url)
+    return (
+        creator_name,
+        title,
+        duration_time,
+        publish_time,
+        domain+video_url,
+        domain+creator_url
+    )
 
 
 def parse_piped_feed(domain,separator, video_player):
@@ -269,7 +277,11 @@ def main():
     #         ])
 
     choosed_func = func_dict.get(args.mode)
-    choosed_func(domain=args.domain, separator=args.separator, video_player=args.video_player)
+    choosed_func(
+        domain=args.domain, 
+        separator=args.separator, 
+        video_player=args.video_player
+    )
 
     # while True:
     #     result = radiolist_dialog(
